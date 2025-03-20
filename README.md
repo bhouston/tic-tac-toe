@@ -1,3 +1,7 @@
+# Tic Tac Toe Game
+
+This is a full-featured Tic Tac Toe game built with Next.js, TypeScript, Tailwind CSS, and Prisma with SQLite. The game includes a welcome page, game board, and leaderboard.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
