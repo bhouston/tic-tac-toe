@@ -65,15 +65,11 @@ export default function WelcomePage() {
         <div className="flex flex-col items-center mb-8">
           <div className="mb-4">
             <Image 
-              src="/tic-tac-toe-logo.png" 
+              src="/tic-tac-toe-logo.svg" 
               alt="Tic Tac Toe Logo" 
               width={80} 
               height={80}
               className="rounded-full"
-              onError={(e) => {
-                // Fallback if image doesn't exist
-                e.currentTarget.src = '/next.svg';
-              }}
             />
           </div>
           <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white">
@@ -126,6 +122,16 @@ export default function WelcomePage() {
           >
             {isSubmitting ? 'Registering...' : 'Start Playing'}
           </button>
+          
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => router.push('/leaderboard')}
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline focus:outline-none"
+            >
+              View Leaderboard
+            </button>
+          </div>
         </form>
       </main>
       

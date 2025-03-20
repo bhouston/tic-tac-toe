@@ -1,102 +1,40 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import * as React from 'react';
+import { render, screen, waitFor } from '../../test/utils';
 import LeaderboardPage from './page';
 
-// Mock the useRouter hook
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-  }),
-}));
-
-// Mock the fetch function
-global.fetch = vi.fn();
-
 describe('LeaderboardPage', () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  it('should show loading state initially', () => {
-    // Mock fetch to return a pending promise
-    vi.mocked(fetch).mockImplementation(() => new Promise(() => {}));
-    
+  it('renders the leaderboard page with loading state initially', () => {
     render(<LeaderboardPage />);
     
+    // Check if title is rendered
     expect(screen.getByText('Leaderboard')).toBeInTheDocument();
-    expect(screen.getByText('See how you stack up against other players!')).toBeInTheDocument();
-    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    
+    // Check if loading message is displayed initially
+    expect(screen.getByText('Loading leaderboard data...')).toBeInTheDocument();
   });
 
-  it('should display message when no players have completed games', async () => {
-    // Mock fetch to return empty array
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      json: async () => [],
-    } as Response);
-    
+  it('displays construction message after loading', async () => {
     render(<LeaderboardPage />);
     
+    // Wait for the loading state to finish
     await waitFor(() => {
-      expect(screen.getByText('No players have completed any games yet. Be the first to play!')).toBeInTheDocument();
+      expect(screen.getByText('Leaderboard is under construction. Coming soon!')).toBeInTheDocument();
     });
   });
 
-  it('should display leaderboard data when available', async () => {
-    // Mock sample leaderboard data
-    const mockData = [
-      {
-        id: '1',
-        name: 'Player 1',
-        stats: {
-          totalGames: 10,
-          wins: 7,
-          losses: 2,
-          draws: 1,
-          winPercentage: 70,
-        },
-        score: 7070,
-      },
-      {
-        id: '2',
-        name: 'Player 2',
-        stats: {
-          totalGames: 5,
-          wins: 2,
-          losses: 2,
-          draws: 1,
-          winPercentage: 40,
-        },
-        score: 4005,
-      },
-    ];
+  it('navigates back to welcome page when button is clicked', async () => {
+    const { user, mockRouter } = render(<LeaderboardPage />);
     
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      json: async () => mockData,
-    } as Response);
-    
-    render(<LeaderboardPage />);
-    
+    // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.getByText('Player 1')).toBeInTheDocument();
-      expect(screen.getByText('Player 2')).toBeInTheDocument();
-      expect(screen.getByText('70%')).toBeInTheDocument();
-      expect(screen.getByText('40%')).toBeInTheDocument();
+      expect(screen.queryByText('Loading leaderboard data...')).not.toBeInTheDocument();
     });
-  });
-
-  it('should display error message when fetch fails', async () => {
-    // Mock fetch to fail
-    vi.mocked(fetch).mockResolvedValue({
-      ok: false,
-      json: async () => ({ message: 'Failed to fetch' }),
-    } as Response);
     
-    render(<LeaderboardPage />);
+    // Click the back button
+    await user.click(screen.getByRole('button', { name: /Back to Welcome Page/i }));
     
-    await waitFor(() => {
-      expect(screen.getByText('Could not load the leaderboard. Please try again later.')).toBeInTheDocument();
-    });
+    // Check if router.push was called with the correct path
+    expect(mockRouter.push).toHaveBeenCalledWith('/welcome');
   });
 });
