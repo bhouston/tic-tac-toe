@@ -40,3 +40,44 @@ export async function getAllGameResults(): Promise<GameResult[]> {
     },
   });
 }
+
+/**
+ * Get leaderboard data with user statistics
+ */
+export async function getLeaderboardData() {
+  // Get all users with their game results
+  const usersWithGames = await prisma.user.findMany({
+    include: {
+      games: true,
+    },
+  });
+
+  // Calculate statistics for each user
+  return usersWithGames.map(user => {
+    const totalGames = user.games.length;
+    const wins = user.games.filter(game => game.outcome === 'win').length;
+    const losses = user.games.filter(game => game.outcome === 'loss').length;
+    const draws = user.games.filter(game => game.outcome === 'draw').length;
+    
+    // Calculate win percentage
+    const winPercentage = totalGames > 0 
+      ? Math.round((wins / totalGames) * 100) 
+      : 0;
+    
+    // Calculate a score for sorting (prioritize win percentage, then total games)
+    const score = (winPercentage * 100) + totalGames;
+    
+    return {
+      id: user.id,
+      name: user.name,
+      stats: {
+        totalGames,
+        wins,
+        losses,
+        draws,
+        winPercentage,
+      },
+      score,
+    };
+  });
+}
