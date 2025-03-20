@@ -8,7 +8,12 @@
     "start": "next start",
     "lint": "next lint",
     "db:studio": "prisma studio",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    \"db:seed\": \"curl -X POST http://localhost:3000/api/test-data\",
+    "test": "vitest",
+    "test:watch": "vitest watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",
@@ -20,12 +25,19 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react-swc": "^3.8.1",
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
+    "happy-dom": "^17.4.4",
+    "jsdom": "^26.0.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.0.9"
   }
 }
