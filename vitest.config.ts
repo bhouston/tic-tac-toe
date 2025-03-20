@@ -9,6 +9,10 @@ export default defineConfig({
     include: ['**/*.test.{ts,tsx}'],
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    jsx: {
+      factory: 'React.createElement',
+      fragment: 'React.Fragment',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

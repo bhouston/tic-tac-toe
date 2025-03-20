@@ -1,6 +1,8 @@
-import React, { ReactElement } from 'react';
+import * as React from 'react';
+import { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 
 // Mock for Next.js router
 const mockRouter = {
@@ -21,8 +23,15 @@ vi.mock('next/navigation', () => ({
 
 // Mock for Next.js Image component
 vi.mock('next/image', () => ({
-  default: ({ src, alt, width, height, className }: any) => (
-    <img src={src} alt={alt} width={width} height={height} className={className} />
+  default: ({ src, alt, width, height, className, onError }: any) => (
+    <img 
+      src={src} 
+      alt={alt} 
+      width={width} 
+      height={height} 
+      className={className} 
+      onError={onError}
+    />
   ),
 }));
 

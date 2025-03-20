@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import * as React from 'react';
 import { render, screen, waitFor } from '../../test/utils';
 
 // Note: This test file is a placeholder for the Leaderboard component that will be implemented later.

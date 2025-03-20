@@ -9,7 +9,7 @@
     "lint": "next lint",
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate dev",
-    \"db:seed\": \"curl -X POST http://localhost:3000/api/test-data\",
+    "db:seed": "curl -X POST http://localhost:3000/api/test-data",
     "test": "vitest",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",

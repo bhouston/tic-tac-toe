@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '../../test/utils';
+import * as React from 'react';
+import { render, screen, waitFor, fireEvent } from '../../test/utils';
 import WelcomePage from './page';
 
 // Mock the fetch function
@@ -43,10 +44,15 @@ describe('WelcomePage', () => {
     // Fill name but provide invalid email
     await user.type(screen.getByLabelText(/Your Name/i), 'Test User');
     await user.type(screen.getByLabelText(/Email Address/i), 'invalid-email');
-    await user.click(screen.getByRole('button', { name: /Start Playing/i }));
+    
+    // Submit the form
+    const submitButton = screen.getByRole('button', { name: /Start Playing/i });
+    fireEvent.click(submitButton);
     
     // Check if error message is displayed
-    expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
+    });
   });
 
   it('submits form successfully with valid data', async () => {
