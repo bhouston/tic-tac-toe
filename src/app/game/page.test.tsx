@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import * as React from 'react';
 import { render, screen, waitFor } from '../../test/utils';
 import GamePage from './page';
 
@@ -24,6 +25,11 @@ describe('GamePage', () => {
 
   it('navigates back to welcome page when button is clicked', async () => {
     const { user, mockRouter } = render(<GamePage />);
+    
+    // Wait for component to fully render
+    await waitFor(() => {
+      expect(screen.getByText('Game page is under construction. Coming soon!')).toBeInTheDocument();
+    });
     
     // Click the back button
     await user.click(screen.getByRole('button', { name: /Back to Welcome Page/i }));
