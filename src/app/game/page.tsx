@@ -2,69 +2,139 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import GameBoard from '@/components/GameBoard';
+import { User } from '@prisma/client';
 
 export default function GamePage() {
   const router = useRouter();
-  const [message, setMessage] = useState('Loading game...');
-  const [gameEnded, setGameEnded] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [gameStats, setGameStats] = useState({
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    total: 0
+  });
 
   useEffect(() => {
     // In a real implementation, we would check if the user is registered
-    // For now, this is just a placeholder
-    const checkUserRegistration = async () => {
-      try {
-        // Here we would fetch user data or check session
-        // For now, just display a message
-        setMessage('Game page is under construction. Coming soon!');
-      } catch (error) {
-        console.error('Error checking user registration:', error);
-        setMessage('Error loading game. Please try again.');
-      }
+    // For demo purposes, create a mock user
+    const mockUser: User = {
+      id: '1',
+      name: 'Demo User',
+      email: 'demo@example.com',
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
-
-    checkUserRegistration();
+    
+    setUser(mockUser);
+    setLoading(false);
   }, []);
-  
-  const handlePlayAgain = () => {
-    // In a real implementation, this would reset the game state
-    setMessage('Starting a new game...');
-    // Simulate game loading
-    setTimeout(() => {
-      setMessage('Game page is under construction. Coming soon!');
-      setGameEnded(false);
-    }, 1000);
+
+  const handleGameComplete = async (outcome: 'win' | 'loss' | 'draw') => {
+    // Update stats locally for immediate feedback
+    setGameStats(prev => {
+      const newStats = { ...prev };
+      newStats[outcome === 'win' ? 'wins' : outcome === 'loss' ? 'losses' : 'draws']++;
+      newStats.total++;
+      return newStats;
+    });
+
+    // In a real implementation, save the result to the database
+    try {
+      await fetch('/api/game-results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user?.id,
+          outcome
+        }),
+      });
+    } catch (error) {
+      console.error('Error saving game result:', error);
+    }
   };
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-gradient-to-b from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg text-center">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">
+            Tic Tac Toe Game
+          </h1>
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+          <p className="text-gray-600 dark:text-gray-300">Loading game...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-gradient-to-b from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg text-center">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">
+            Tic Tac Toe Game
+          </h1>
+          <p className="text-red-500 mb-6">
+            {error || "Error loading game. Please register first."}
+          </p>
+          <button
+            onClick={() => router.push('/welcome')}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          >
+            Go to Welcome Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-gradient-to-b from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
-      <main className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg text-center">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">
+    <div className="flex min-h-screen flex-col items-center p-6 bg-gradient-to-b from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
+      <main className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+        <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-4">
           Tic Tac Toe Game
         </h1>
         
-        <p className="text-gray-600 dark:text-gray-300 mb-6">
-          {message}
-        </p>
+        <div className="mb-6">
+          <p className="text-gray-600 dark:text-gray-300 text-center">
+            Welcome, <span className="font-semibold">{user.name}</span>!
+          </p>
+          
+          <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+            <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded-md">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Wins</p>
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">{gameStats.wins}</p>
+            </div>
+            <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded-md">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Losses</p>
+              <p className="text-xl font-bold text-red-600 dark:text-red-400">{gameStats.losses}</p>
+            </div>
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded-md">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Draws</p>
+              <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400">{gameStats.draws}</p>
+            </div>
+          </div>
+        </div>
         
-        {gameEnded && (
-          <button
-            onClick={handlePlayAgain}
-            className="mb-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-          >
-            Play Again
-          </button>
-        )}
+        <GameBoard user={user} onGameComplete={handleGameComplete} />
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
           <button
             onClick={() => router.push('/leaderboard')}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+            className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
           >
             View Leaderboard
           </button>
           <button
             onClick={() => router.push('/welcome')}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
+            className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white"
           >
             Back to Welcome
           </button>
