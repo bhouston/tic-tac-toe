@@ -18,19 +18,55 @@ export default function GamePage() {
   });
 
   useEffect(() => {
-    // In a real implementation, we would check if the user is registered
-    // For demo purposes, create a mock user
-    const mockUser: User = {
-      id: '1',
-      name: 'Demo User',
-      email: 'demo@example.com',
-      createdAt: new Date(),
-      updatedAt: new Date()
+    // Fetch the first user from the database
+    const fetchUser = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch('/api/users');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        
+        const users = await response.json();
+        
+        if (users.length === 0) {
+          // If no users exist, redirect to welcome page to create one
+          router.push('/welcome');
+          return;
+        }
+        
+        // Use the first user in the database
+        setUser(users[0]);
+        
+        // Also fetch this user's stats
+        try {
+          const statsResponse = await fetch(`/api/game-results?userId=${users[0].id}`);
+          if (statsResponse.ok) {
+            const stats = await statsResponse.json();
+            setGameStats({
+              wins: stats.wins,
+              losses: stats.losses,
+              draws: stats.draws,
+              total: stats.totalGames
+            });
+          }
+        } catch (statsError) {
+          console.error('Error fetching user stats:', statsError);
+        }
+        
+      } catch (err) {
+        console.error('Error fetching user:', err);
+        setError('Could not load user data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
     };
     
-    setUser(mockUser);
-    setLoading(false);
-  }, []);
+    fetchUser();
+  }, [router]);
 
   const handleGameComplete = async (outcome: 'win' | 'loss' | 'draw') => {
     // Update stats locally for immediate feedback
